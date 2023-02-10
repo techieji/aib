@@ -16,7 +16,7 @@ def process_text(st):
     n = len(l) // 3
     qu, ms, er = l[:n], l[n:2*n], l[2*n:]
     # Syllabus
-    syl = str(s.select('.syllabus_section div')[0])
+    syl = s.select('.syllabus_section div')[0].text
     return {'md': md, 'specs': spec, 'questions': qu, 'markscheme': ms, 'report': er, 'syllabus': syl}
 
 visited = set()
@@ -45,7 +45,6 @@ async def visit(client, f):
 
 async def main():
     q.append("https://ibquestionbank.netlify.app/questionbank.ibo.org/en/teachers/00000/questionbanks/7-dp-mathematics-hl/syllabus_sections.html")
-    # q.append("https://ibquestionbank.netlify.app/questionbank.ibo.org/en/teachers/00000/questionbanks/7-dp-mathematics-hl/questions/268000.html")
     with open('data.jsonl', 'w') as f:
         async with httpx.AsyncClient() as client:
             while q:

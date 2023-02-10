@@ -1,27 +1,18 @@
 from bottle import *
 import json
-
-f = open('data.jsonl', 'r')
-
-"""<script>
-MathJax = {
-  tex: {
-    inlineMath: [['$', '$'], ['\\(', '\\)']]
-  },
-  svg: {
-    fontCache: 'global'
-  }
-};
-</script>
-<script type="text/javascript" id="MathJax-script" async
-  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
-</script>"""
+from linecache import getline
 
 s = '<script type="text/javascript" async="" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML-full"></script>'
 
-@get('/')
-def serve():
-    d = json.loads(next(f))
-    return '<html>' + s + '\n'.join(d['questions']) + '</html>'
+@get('/question/<n:int>')
+def frontend(n):
+    d = json.loads(getline('data.jsonl', n))
+    spec = '\n'.join(d['specs'])
+    qs = '\n'.join(d['questions'])
+    return '<html>' + s + spec + '\n' + qs + '</html>'
+
+@get('/api/question/<n:int>')
+def question_api(n):
+    return json.loads(getline('data.jsonl', n))
 
 run()
