@@ -13,6 +13,9 @@ def frontend(n):
 
 @get('/api/question/<n:int>')
 def question_api(n):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE'
+    response.headers['Access-Control-Allow-Headers'] = 'Authorization, Origin, Accept, Content-Type, X-Requested-With'
     return json.loads(getline('data.jsonl', n))
 
 run()
