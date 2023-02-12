@@ -1,3 +1,13 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
-<a href="/about">Test link</a>
+<h1 class="text-center">IB Questioner</h1>
+
+<div class="px-4 py-5 my-5 text-center">
+    <!--img class="d-block mx-auto mb-4" src="../assets/brand/bootstrap-logo.svg" alt="" width="72" height="57"-->
+    <h1 class="display-5 fw-bold">IB Questions, free</h1>
+    <div class="col-lg-6 mx-auto">
+      <p class="lead mb-4">Freely practice and solve IB Questions on a site that contains so much information that your head could explode from comprehending it all.</p>
+      <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+        <button type="button" class="btn btn-primary btn-lg px-4 gap-3">Primary button</button>
+        <button type="button" class="btn btn-outline-secondary btn-lg px-4">Secondary</button>
+      </div>
+    </div>
+  </div>
