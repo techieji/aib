@@ -4,6 +4,7 @@ from collections import deque
 import asyncio
 from urllib.parse import urljoin
 import json
+from bloom_filter2 import BloomFilter
 
 def process_text(st):
     s = bs4.BeautifulSoup(st, 'lxml')
@@ -11,16 +12,18 @@ def process_text(st):
     l = [x.text for x in s.find_all('td')]
     md = dict(zip(l[::2], l[1::2]))
     # Question, Markscheme, and ER
-    spec = [str(x) for x in s.select('.specification')]
-    l = [str(x) for x in s.select('.question')]
+    spec = [x.get_text().strip() for x in s.select('.specification')]
+    l = [x.get_text().strip() for x in s.select('.question')]
     n = len(l) // 3
     qu, ms, er = l[:n], l[n:2*n], l[2*n:]
     # Syllabus
-    syl = s.select('.syllabus_section div')[0].text
+    syl = s.select('.syllabus_section div')[0].text.strip().split('\u00bb')
     return {'md': md, 'specs': spec, 'questions': qu, 'markscheme': ms, 'report': er, 'syllabus': syl}
 
-visited = set()
+filename = 'visited.bin'
+visited = BloomFilter(max_elements=10**8, error_rate=0.01, filename=(filename, -1))
 q = deque()
+i = 0
 
 async def visit(client, f):
     try:
@@ -50,6 +53,11 @@ async def main():
             while q:
                 await visit(client, f)
                 await asyncio.sleep(0.01)
+                i += 1
 
-asyncio.run(main())
-print(len(visited))
+try:
+    asyncio.run(main())
+    print('DONE!')
+except Exception as e:
+    with open('progress.bin', 'wb') as f:
+        pickle.dump([q, i])

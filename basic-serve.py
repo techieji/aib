@@ -1,32 +1,56 @@
 from bottle import *
 import json
 from linecache import getline
+import re
 
-s = '<script type="text/javascript" async="" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML-full"></script>'
+hook('after_request')
+def enable_cors():
+    response.set_header('Access-Control-Allow-Origin', '*')
+    response.set_header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS')
+    response.set_header('Access-Control-Allow-Headers', 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token')
 
-# hook('after_request')
-# def enable_cors():
-#     response.headers['Access-Control-Allow-Origin'] = '*'
-#     response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
-#     response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+@get('/api/total_question/<n:int>')
+def get_question(n):
+    enable_cors()
+    return json.loads(getline('data.jsonl', n))
 
 @get('/question/<n:int>')
 def frontend(n):
-    d = json.loads(getline('data.jsonl', n))
+    d = get_question(n)
     spec = '\n'.join(d['specs'])
     qs = '\n'.join(d['questions'])
-    return '<html>' + s + spec + '\n' + qs + '</html>'
+    return f"""
+<html>
+    <head>
+        <script type="text/javascript" async="" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML-full"></script>
+    </head>
+    <body>
+        <a href="/question/{n-1}">Back</a>
+        <a href="/question/{n+1}">Next</a><br>
+        {spec}<br>
+        {qs}
+    </body>
+</html>    
+"""
+
+@get('/api/metadata/<n:int>')
+def metadata_api(n):
+    return get_question(n)['md']
+
+def extract_math(s):
+    l = []
+    def sub_fn(m):
+        l.append(m.group(0))
+        return f"!MATH<{len(l) - 1}>"
+    return {
+        "non-math": re.sub(r'\\\(.*\\\)', sub_fn, s),
+        "extracted-math": l
+    }
 
 @get('/api/question/<n:int>')
 def question_api(n):
-    response.headers['Access-Control-Allow-Origin'] = '*'
-<<<<<<< HEAD
-    response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE'
-    response.headers['Access-Control-Allow-Headers'] = 'Authorization, Origin, Accept, Content-Type, X-Requested-With'
-=======
-    response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
->>>>>>> 4d19ac649619d4aafea63aed8a56517bf0a96369
-    return json.loads(getline('data.jsonl', n))
+    enable_cors()
+    qs = get_question(n)['questions']
+    return list(map(extract_math, qs))
 
 run()
